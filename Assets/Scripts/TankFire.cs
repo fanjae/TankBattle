@@ -39,7 +39,7 @@ public class TankFire : MonoBehaviour
         GameObject cannonBall = Instantiate(cannonBallPrefab, firePoint.position, firePoint.rotation);
 
         Rigidbody rb;
-        if (TryGetComponent<Rigidbody>(out rb) == false) // Æ÷Åº Component È¹µæ
+        if (cannonBall.TryGetComponent<Rigidbody>(out rb) == false) // Æ÷Åº Component È¹µæ
         {
             Debug.LogError("Rigidbody Not Found.");
             return ;
