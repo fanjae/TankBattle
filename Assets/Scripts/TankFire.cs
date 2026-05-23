@@ -15,11 +15,6 @@ public class TankFire : MonoBehaviour
 
     private float lastFireTime; // 마지막 발사 시간
 
-    void Start()
-    {
-        
-    }
-
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Space)) // 스페이스 버튼 누르면 대포 발사
