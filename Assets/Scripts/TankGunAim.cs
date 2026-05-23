@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class NewMonoBehaviourScript : MonoBehaviour
+public class TankGunAim : MonoBehaviour
 {
     [SerializeField] 
     private float pitchSpeed = 30f;
