@@ -23,8 +23,10 @@ public class CannonBall : MonoBehaviour
 
             targetRb.AddForce(pushDir * pushForce, ForceMode.Impulse);
 
+            // 충돌한 오브젝트 부모쪽에서 TankHealth 컴포넌트 찾기
             TankHealth tankHealth = collision.gameObject.GetComponentInParent<TankHealth>();
 
+            // 체력 컴포넌트 존재시 충돌 데미지 적용
             if (tankHealth != null)
             {
                 tankHealth.TakeDamage(crashDamage);
