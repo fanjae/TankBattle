@@ -154,3 +154,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CannonBall
   lifeTime: 3
+  pushForce: 3
+  upwardForce: 5
+  crash_damage: 5
