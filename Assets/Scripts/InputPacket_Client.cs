@@ -5,7 +5,6 @@ using UnityEngine;
 public class InputPacket
 {
     public string Type = "Input";
-    public int PlayerId;
     public float Move;
     public float Turn;
     public float Turret;

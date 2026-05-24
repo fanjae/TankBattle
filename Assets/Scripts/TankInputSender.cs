@@ -30,8 +30,6 @@ public class TankInputSender : MonoBehaviour
     {
         InputPacket packet = new InputPacket();
 
-        packet.PlayerId = serverConnector.PlayerId;
-
         if (Input.GetKey(KeyCode.W)) packet.Move += 1f;
         if (Input.GetKey(KeyCode.S)) packet.Move -= 1f;
 
@@ -45,6 +43,13 @@ public class TankInputSender : MonoBehaviour
         if (Input.GetKey(KeyCode.DownArrow)) packet.Gun += 1f;
 
         packet.Fire = Input.GetKey(KeyCode.Space);
+
+        bool fire = Input.GetKeyDown(KeyCode.Space);
+
+        if (fire)
+        {
+            Debug.Log("Fire input detected");
+        }
 
         return packet;
     }
