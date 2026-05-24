@@ -5,4 +5,5 @@ public class StatePacket
 {
     public string Type = "State";
     public TankState[] Tanks;
+    public CannonBallState[] CannonBalls;
 }
