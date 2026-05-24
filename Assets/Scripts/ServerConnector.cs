@@ -152,7 +152,7 @@ public class ServerConnector : MonoBehaviour
         }
     }
 
-    private void OnDestroy()
+    private void OnDestroy() // 匙飘况农 府家胶 沥府
     {
         stream?.Close();
         client?.Close();
