@@ -6,8 +6,14 @@ public class NetworkTankView : MonoBehaviour
     [SerializeField] private Transform turret;
     [SerializeField] private Transform gun;
 
+    private Quaternion initialGunLocalRotation;
     public int PlayerId => playerId;
 
+    private void Awake()
+    {
+        if (gun != null)
+            initialGunLocalRotation = gun.localRotation;
+    }
 
     // 서버에서 받은 탱크 상태를 Unity 오브젝트에 반영
     public void ApplyState(TankState state)
@@ -19,6 +25,6 @@ public class NetworkTankView : MonoBehaviour
             turret.localRotation = Quaternion.Euler(0f, state.TurretTurn, 0f);
 
         if (gun != null) // 포신 각도 반영
-            gun.localRotation = Quaternion.Euler(state.GunPitch, 0f, 0f);
+            gun.localRotation = initialGunLocalRotation * Quaternion.Euler(state.GunPitch, 0f, 0f);
     }
 }
