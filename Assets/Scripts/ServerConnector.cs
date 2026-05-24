@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,9 @@ public class ServerConnector : MonoBehaviour
 
     // 서버에서 받은 탱크 상태를 적용할 때 사용할 목록
     [SerializeField] private NetworkTankView[] tankViews;
+    [SerializeField] private GameObject cannonBallPrefab;
+
+    private readonly Dictionary<int, GameObject> cannonBallObjects = new();
     public int PlayerId { get; private set; }
 
     private TcpClient client;
@@ -150,11 +154,90 @@ public class ServerConnector : MonoBehaviour
                 }
             }
         }
+
+        if (packet.CannonBalls != null)
+        {
+            ApplyCannonBallStates(packet.CannonBalls);
+        }
     }
 
     private void OnDestroy() // 네트워크 리소스 정리
     {
+        foreach (GameObject cannonBall in cannonBallObjects.Values)
+        {
+            Destroy(cannonBall);
+        }
+
+        cannonBallObjects.Clear();
+
         stream?.Close();
         client?.Close();
+    }
+
+    // 서버에서 받은 포탄 상태를 기준으로 클라이언트에 생성, 위치 갱신, 제거
+    private void ApplyCannonBallStates(CannonBallState[] states)
+    {
+        HashSet<int> aliveIds = new();
+
+        foreach (CannonBallState state in states)
+        {
+            int id = state.CannonBallId;
+            aliveIds.Add(id);
+
+            // 서버에서 계산한 포탄 위치
+            Vector3 position = new Vector3(state.X, state.Y, state.Z);
+
+            // 생성 안된 포탄 새로 생성
+            if (cannonBallObjects.TryGetValue(id, out GameObject cannonBall) == false ||
+                cannonBall == null)
+            {
+                cannonBall = Instantiate(cannonBallPrefab, position, Quaternion.identity);
+                cannonBallObjects[id] = cannonBall;
+
+                // 발사자 탱크와의 충돌 무시
+                IgnoreOwnerCollision(cannonBall, state.OwnerPlayerId);
+            }
+
+            // 기존 포탄 위치 서버랑 동기화
+            cannonBall.transform.position = position;
+        }
+
+        // 없는 포탄 제거
+        RemoveMissingCannonBalls(aliveIds);
+    }
+
+    // 포탄이 생성 직후 자신의 탱크와 충돌하지 않게 처리
+    private void IgnoreOwnerCollision(GameObject cannonBall, int ownerPlayerId)
+    {
+        Collider ballCollider = cannonBall.GetComponent<Collider>();
+        if (ballCollider == null) return;
+
+        foreach (NetworkTankView view in tankViews)
+        {
+            if (view.PlayerId != ownerPlayerId) continue;
+
+            Collider tankCollider = view.GetComponent<Collider>();
+
+            if (tankCollider != null)
+                Physics.IgnoreCollision(ballCollider, tankCollider, true);
+
+            return;
+        }
+    }
+
+    // 서버 상태 패킷에 없는 포탄은 제거
+    private void RemoveMissingCannonBalls(HashSet<int> aliveIds)
+    {
+        // Key 목록을 복사해서 순회한다.
+        // Dictionary는 순회 중 수정이 불가함.
+        foreach (int id in new List<int>(cannonBallObjects.Keys))
+        {
+            if (aliveIds.Contains(id)) continue;
+
+            if (cannonBallObjects[id] != null)
+                Destroy(cannonBallObjects[id]);
+
+            cannonBallObjects.Remove(id);
+        }
     }
 }
