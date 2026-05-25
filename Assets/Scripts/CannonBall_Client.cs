@@ -6,7 +6,6 @@ public class CannonBall_Client : MonoBehaviour
     [SerializeField] private float pushForce = 6f;
     [SerializeField] private float upwardForce = 0.8f;
     [SerializeField] private float torqueForce = 2.5f;
-    [SerializeField] private int crashDamage = 5;
 
     private Vector3 lastPosition;
     private Vector3 moveDirection;
@@ -58,13 +57,6 @@ public class CannonBall_Client : MonoBehaviour
             // 진행 방향 기준으로 살짝 기울어지는 토크
             Vector3 torqueDir = Vector3.Cross(Vector3.up, horizontalDir).normalized;
             targetRb.AddTorque(torqueDir * torqueForce, ForceMode.Impulse);
-
-            TankHealth tankHealth = collision.gameObject.GetComponentInParent<TankHealth>();
-
-            if (tankHealth != null)
-            {
-                tankHealth.TakeDamage(crashDamage);
-            }
         }
 
         Destroy(gameObject);
