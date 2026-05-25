@@ -22,13 +22,14 @@ public class ServerConnector : MonoBehaviour
 
     [SerializeField] private TMP_Text p1HpText;
     [SerializeField] private TMP_Text p2HpText;
-
-
-    private readonly Dictionary<int, GameObject> cannonBallObjects = new();
     public int PlayerId { get; private set; }
 
     private TcpClient client;
     private NetworkStream stream;
+
+    private const int MaxPacketSize = 4096;
+
+    private readonly Dictionary<int, GameObject> cannonBallObjects = new();
 
     private async void Start()
     {
@@ -76,6 +77,11 @@ public class ServerConnector : MonoBehaviour
         // 길이 정보 읽어서 int로 변환
         byte[] lengthBuffer = await ReadExactAsync(4);
         int bodyLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+        if (bodyLength <= 0 || bodyLength > MaxPacketSize)
+        {
+            throw new Exception($"Invalid packet size: {bodyLength}");
+        }
 
         // 본문 정보 읽어서 JSON 문자열로 변환
         byte[] bodyBuffer = await ReadExactAsync(bodyLength);
