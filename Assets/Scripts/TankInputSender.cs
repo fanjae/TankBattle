@@ -44,13 +44,6 @@ public class TankInputSender : MonoBehaviour
 
         packet.Fire = Input.GetKey(KeyCode.Space);
 
-        bool fire = Input.GetKeyDown(KeyCode.Space);
-
-        if (fire)
-        {
-            Debug.Log("Fire input detected");
-        }
-
         return packet;
     }
 }
