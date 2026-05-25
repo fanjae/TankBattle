@@ -4,15 +4,21 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ServerConnector : MonoBehaviour
 {
-    [SerializeField] private string serverIp = "127.0.0.1";
+    [SerializeField] private string serverIp;
     [SerializeField] private int serverPort = 7777;
+
+    // 연결 후 카메라랑 발사표시 처리
+    [SerializeField] private Camera mainCamera;
+    [SerializeField] private AimFollow aimFollow;
 
     // 서버에서 받은 탱크 상태를 적용할 때 사용할 목록
     [SerializeField] private NetworkTankView[] tankViews;
     [SerializeField] private GameObject cannonBallPrefab;
+
 
     private readonly Dictionary<int, GameObject> cannonBallObjects = new();
     public int PlayerId { get; private set; }
@@ -22,6 +28,7 @@ public class ServerConnector : MonoBehaviour
 
     private async void Start()
     {
+        serverIp = PlayerPrefs.GetString("ServerIP", "127.0.0.1");
         await ConnectAsync();
     }
 
@@ -45,12 +52,18 @@ public class ServerConnector : MonoBehaviour
 
             Debug.Log($"My PlayerId: {PlayerId}");
 
+            // 카메라 설정
+            AttachCameraToMyTank();
+
             // 상태 패킷 수신
             _ = ReceiveLoopAsync();
         }
         catch (Exception e)
         {
             Debug.LogError($"Server connect failed: {e.Message}");
+
+            PlayerPrefs.SetString("MenuMessage", "Unable to connect to the server.");
+            SceneManager.LoadScene("MainMenuScene");
         }
     }
 
@@ -238,6 +251,34 @@ public class ServerConnector : MonoBehaviour
                 Destroy(cannonBallObjects[id]);
 
             cannonBallObjects.Remove(id);
+        }
+    }
+
+    // 서버에서 받은 PlayerID를 기준으로 내 탱크를 찾게 만들기
+    private void AttachCameraToMyTank()
+    {
+        foreach (NetworkTankView view in tankViews)
+        {
+            if (view.PlayerId != PlayerId) continue;
+
+            // 카메라 지점과 포신 끝 위치를 찾음
+            Transform cameraPoint = view.transform.Find("Turret/CameraPoint");
+            Transform gunAimPoint = view.transform.Find("Turret/Gun/GunFireStartingPoint");
+
+            if (cameraPoint == null)
+            {
+                Debug.LogError("CameraPoint not found.");
+                return;
+            }
+
+            // 메인 카메라를 탱크 카메라 Point에 붙이고, 위치랑 회전상태 초기화 및 십자 표시(조준점)이 탱크 포신 위치 따라가게 설정
+            mainCamera.transform.SetParent(cameraPoint);
+            mainCamera.transform.localPosition = Vector3.zero;
+            mainCamera.transform.localRotation = Quaternion.identity;
+
+            aimFollow.SetTarget(mainCamera, gunAimPoint);
+
+            return;
         }
     }
 }
