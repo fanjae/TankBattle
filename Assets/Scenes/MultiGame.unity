@@ -3692,6 +3692,8 @@ MonoBehaviour:
   - {fileID: 528259979}
   - {fileID: 1014703265}
   cannonBallPrefab: {fileID: 1042978654368451703, guid: f71ef4ac4c727054089181910eb71809, type: 3}
+  p1HpText: {fileID: 191465797}
+  p2HpText: {fileID: 282401821}
 --- !u!4 &1539552588
 Transform:
   m_ObjectHideFlags: 0

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -18,6 +19,9 @@ public class ServerConnector : MonoBehaviour
     // 서버에서 받은 탱크 상태를 적용할 때 사용할 목록
     [SerializeField] private NetworkTankView[] tankViews;
     [SerializeField] private GameObject cannonBallPrefab;
+
+    [SerializeField] private TMP_Text p1HpText;
+    [SerializeField] private TMP_Text p2HpText;
 
 
     private readonly Dictionary<int, GameObject> cannonBallObjects = new();
@@ -166,6 +170,8 @@ public class ServerConnector : MonoBehaviour
                     break;
                 }
             }
+
+            UpdateHpUI(state); // HP 상태 변경
         }
 
         if (packet.CannonBalls != null)
@@ -279,6 +285,19 @@ public class ServerConnector : MonoBehaviour
             aimFollow.SetTarget(mainCamera, gunAimPoint);
 
             return;
+        }
+    }
+
+    // HP 상태 변경
+    private void UpdateHpUI(TankState state)
+    {
+        if (state.PlayerId == 1 && p1HpText != null)
+        {
+            p1HpText.text = $"P1 HP : {state.Hp}";
+        }
+        else if (state.PlayerId == 2 && p2HpText != null)
+        {
+            p2HpText.text = $"P2 HP : {state.Hp}";
         }
     }
 }
