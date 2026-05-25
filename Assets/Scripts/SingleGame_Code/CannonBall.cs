@@ -6,6 +6,13 @@ public class CannonBall : MonoBehaviour
     [SerializeField] private float pushForce = 10f;
     [SerializeField] private float upwardForce = 1f;
     [SerializeField] private int crashDamage = 5;
+
+    private TankHealth ownerTankHealth;
+
+    public void SetOwner(TankHealth owner)
+    {
+        ownerTankHealth = owner;
+    }
     private void Start()
     {
         Destroy(gameObject, lifeTime); // 3초 뒤 삭제
@@ -13,6 +20,14 @@ public class CannonBall : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        TankHealth hitTankHealth = collision.gameObject.GetComponentInParent<TankHealth>();
+
+        // 내가 쏜 포탄이 내 탱크에 맞은 경우 무시
+        if (hitTankHealth != null && hitTankHealth == ownerTankHealth)
+        {
+            return;
+        }
+
         Rigidbody targetRb;
 
         if (collision.gameObject.TryGetComponent<Rigidbody>(out targetRb))
@@ -35,11 +50,4 @@ public class CannonBall : MonoBehaviour
 
         Destroy(gameObject);
     }
-    /*
-    private void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log($"Hit : {collision.gameObject.name}"); // 충돌한 콜리더 오브젝트 이름 출력
-
-        Destroy(gameObject); // 삭제
-    }*/
 }

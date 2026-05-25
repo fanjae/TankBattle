@@ -33,6 +33,11 @@ public class TankFire : MonoBehaviour
         // ¹ß»ç À§Ä¡¿Í È¸Àü°ªÀ¸·Î Æ÷Åº Prefab »ý¼º
         GameObject cannonBall = Instantiate(cannonBallPrefab, firePoint.position, firePoint.rotation);
 
+        if (cannonBall.TryGetComponent<CannonBall>(out CannonBall cannonBallScript))
+        {
+            cannonBallScript.SetOwner(GetComponentInParent<TankHealth>());
+        }
+
         Rigidbody rb;
         if (cannonBall.TryGetComponent<Rigidbody>(out rb) == false) // Æ÷Åº Component È¹µæ
         {
