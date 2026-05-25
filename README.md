@@ -93,5 +93,5 @@
 - 클라이언트 보간 처리 적용
 
 ## 개발 기록
-- 추후 추가 예정
+- [TankBattle 개발 과정 정리](https://fanjae.tistory.com/251)
 
