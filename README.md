@@ -23,6 +23,20 @@
 | Unity Client | [TankBattle](https://github.com/fanjae/TankBattle) |
 | C# TCP Server | [TankBattleServer](https://github.com/fanjae/TankBattleServer) |
 
+## 실행 방법
+### 싱글 플레이
+1. Unity 프로젝트를 엽니다.
+2. Unity Editor에서 Play 버튼을 눌러 실행합니다.
+
+### 멀티 플레이
+1. `TankBattleServer` 프로젝트를 먼저 실행합니다.
+2. 서버가 연결 대기 상태인지 확인합니다.
+3. Unity 프로젝트를 엽니다.
+4. Unity Editor에서 Play 버튼을 눌러 클라이언트를 실행합니다.
+
+※ 멀티 플레이 테스트는 ParrelSync 환경에서 진행하였습니다.
+
+
 ## 구현 기능
 <img width="600" height="500" alt="Image" src="https://github.com/user-attachments/assets/6bd9c187-0c16-484a-975e-4a1ea0c77010" />
 <img width="600" height="500" alt="Image" src="https://github.com/user-attachments/assets/f38637d0-bc9b-491c-90a3-fa6df91a3117" />
