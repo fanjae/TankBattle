@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
@@ -9,8 +10,7 @@ using UnityEngine.SceneManagement;
 
 public class ServerConnector : MonoBehaviour
 {
-    [SerializeField] private string serverIp;
-    [SerializeField] private int serverPort = 7777;
+    [SerializeField] private string serverIp; [SerializeField] private int serverPort = 7777;
 
     // 연결 후 카메라랑 발사표시 처리
     [SerializeField] private Camera mainCamera;
@@ -22,6 +22,13 @@ public class ServerConnector : MonoBehaviour
 
     [SerializeField] private TMP_Text p1HpText;
     [SerializeField] private TMP_Text p2HpText;
+
+    [SerializeField] private TMP_Text pingText;
+    private float pingTimer;
+
+    private bool isConnected;
+    private const int PingIntervalMs = 1000;
+
     public int PlayerId { get; private set; }
 
     private TcpClient client;
@@ -30,6 +37,8 @@ public class ServerConnector : MonoBehaviour
     private const int MaxPacketSize = 4096;
 
     private readonly Dictionary<int, GameObject> cannonBallObjects = new();
+    private readonly SemaphoreSlim sendLock = new SemaphoreSlim(1, 1); // 송신 락
+
 
     private async void Start()
     {
@@ -60,8 +69,12 @@ public class ServerConnector : MonoBehaviour
             // 카메라 설정
             AttachCameraToMyTank();
 
+            isConnected = true;
+
             // 상태 패킷 수신
             _ = ReceiveLoopAsync();
+            _ = PingLoopAsync();
+
         }
         catch (Exception e)
         {
@@ -114,6 +127,8 @@ public class ServerConnector : MonoBehaviour
     {
         if (stream == null) return;
 
+        await sendLock.WaitAsync();
+
         try
         {
             // 패킷 객체 JSON 문자열로 변환
@@ -130,6 +145,10 @@ public class ServerConnector : MonoBehaviour
         catch (Exception e)
         {
             Debug.LogError($"Send failed: {e.Message}");
+        }
+        finally
+        {
+            sendLock.Release();
         }
     }
 
@@ -155,11 +174,40 @@ public class ServerConnector : MonoBehaviour
 
                     ApplyStatePacket(packet);
                 }
+                else if (json.Contains("\"Type\":\"Pong\""))
+                {
+                    PongPacket packet = JsonUtility.FromJson<PongPacket>(json);
+
+                    long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+                    long rtt = now - packet.ClientTimeMs;
+
+                    Debug.Log($"Ping: {rtt} ms");
+
+                    if (pingText != null)
+                    {
+                        pingText.text = $"PING : {rtt} ms";
+                    }
+                }
             }
         }
         catch (Exception e)
         {
             Debug.LogError($"Receive loop stopped: {e.Message}");
+        }
+    }
+
+    private async Task PingLoopAsync()
+    {
+        while (isConnected && stream != null)
+        {
+            PingPacket packet = new PingPacket
+            {
+                ClientTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            };
+
+            SendJson(packet);
+
+            await Task.Delay(PingIntervalMs);
         }
     }
 
@@ -188,6 +236,8 @@ public class ServerConnector : MonoBehaviour
 
     private void OnDestroy() // 네트워크 리소스 정리
     {
+        isConnected = false;
+
         foreach (GameObject cannonBall in cannonBallObjects.Values)
         {
             Destroy(cannonBall);
